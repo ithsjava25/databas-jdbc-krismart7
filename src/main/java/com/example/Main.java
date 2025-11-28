@@ -112,6 +112,30 @@ public class Main {
         }
     }
 
+    // GET MOON MISSION BY ID
+    private void getMoonMissionById(Connection connection, InputStream in) throws SQLException, IOException {
+        System.out.print("Enter mission_id: ");
+        int id = Integer.parseInt(readLine(in));
+
+        String sql = "SELECT * FROM moon_mission WHERE mission_id = ?";
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setInt(1, id);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    System.out.println("Spacecraft: " + rs.getString("spacecraft"));
+                    System.out.println("Launch Date: " + rs.getDate("launch_date"));
+                    System.out.println("Carrier Rocket: " + rs.getString("carrier_rocket"));
+                    System.out.println("Operator: " + rs.getString("operator"));
+                    System.out.println("Mission Type: " + rs.getString("mission_type"));
+                    System.out.println("Outcome: " + rs.getString("outcome"));
+                } else {
+                    System.out.println("No mission found with id " + id);
+                }
+            }
+        }
+    }
+
+
 
 
 
