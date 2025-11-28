@@ -67,12 +67,16 @@ public class Main {
                 }
             }
 
+            // MENU LOOP
             boolean exit = false;
             while (!exit) {
                 System.out.println("\nMenu:");
                 System.out.println("1) List moon missions");
                 System.out.println("2) Get a moon mission by mission_id");
                 System.out.println("3) Count missions for a given year");
+                System.out.println("4) Create an account");
+                System.out.println("5) Update an account password");
+                System.out.println("6) Delete an account");
                 System.out.println("0) Exit");
                 System.out.print("Choose an option: ");
                 String choice = readLine(in);
@@ -96,12 +100,11 @@ public class Main {
                     case "6":
                         deleteAccount(connection, in);
                         break;
-
                     case "0":
                         exit = true;
                         break;
                     default:
-                        System.out.println("Invalid option");
+                        System.out.println("Invalid option.");
                 }
             }
 
@@ -112,15 +115,16 @@ public class Main {
 
     // LIST MOON MISSIONS
     private void listMoonMissions(Connection connection) throws SQLException {
-        String sql = "SELECT spacecraft FROM moon_mission";
+        String sql = "SELECT mission_id, spacecraft FROM moon_mission";
         try (Statement stmt = connection.createStatement();
              ResultSet rs = stmt.executeQuery(sql)) {
             System.out.println("Moon Missions:");
             while (rs.next()) {
-                System.out.println(rs.getString("spacecraft"));
+                System.out.println(rs.getInt("mission_id") + ": " + rs.getString("spacecraft"));
             }
         }
     }
+
 
     // GET MOON MISSION BY ID
     private void getMoonMissionById(Connection connection, InputStream in) throws SQLException, IOException {
@@ -160,7 +164,6 @@ public class Main {
             }
         }
     }
-
 
 
 
