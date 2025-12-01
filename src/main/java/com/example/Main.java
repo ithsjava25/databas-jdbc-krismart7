@@ -94,12 +94,6 @@ public class Main {
                     case "4":
                         createAccount(connection, in);
                         break;
-                    case "5":
-                        updateAccountPassword(connection, in);
-                        break;
-                    case "6":
-                        deleteAccount(connection, in);
-                        break;
                     case "0":
                         exit = true;
                         break;
@@ -162,6 +156,35 @@ public class Main {
                     System.out.println("Number of missions in " + year + ": " + rs.getInt(1));
                 }
             }
+        }
+    }
+
+    // CREATE ACCOUNT
+    private void createAccount(Connection connection, InputStream in) throws SQLException, IOException {
+        System.out.print("First name: ");
+        String firstName = readLine(in);
+
+        System.out.print("Last name: ");
+        String lastName = readLine(in);
+
+        System.out.print("SSN: ");
+        String ssn = readLine(in);
+
+        System.out.print("Password: ");
+        String password = readLine(in);
+
+        String username = (firstName.length() >= 3 ? firstName.substring(0, 3) : firstName)
+                + (lastName.length() >= 3 ? lastName.substring(0, 3) : lastName);
+
+        String sql = "INSERT INTO account (name, first_name, last_name, ssn, password) VALUES (?, ?, ?, ?, ?)";
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setString(1, username);
+            ps.setString(2, firstName);
+            ps.setString(3, lastName);
+            ps.setString(4, ssn);
+            ps.setString(5, password);
+            ps.executeUpdate();
+            System.out.println("Account " + username + " created!");
         }
     }
 
