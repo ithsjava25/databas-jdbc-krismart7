@@ -41,16 +41,33 @@ public class MoonMissionRepositoryJdbc extends BaseRepository<MoonMission> imple
         );
     }
 
+    /**
+     * Retrieves a list of all moon missions in the database.
+     *
+     * @return a {@link List} of {@link MoonMission} objects
+     */
     @Override
     public List<MoonMission> listMissions() {
         return queryList("SELECT * FROM moon_mission");
     }
 
+    /**
+     * Retrieves a moon mission by its unique mission ID.
+     *
+     * @param missionId the ID of the mission to retrieve
+     * @return an {@link Optional} containing the {@link MoonMission} if found, otherwise empty
+     */
     @Override
     public Optional<MoonMission> getMissionById(int missionId) {
         return querySingle("SELECT * FROM moon_mission WHERE mission_id=?", missionId);
     }
 
+    /**
+     * Counts the number of moon missions launched in a specific year.
+     *
+     * @param year the year to count missions for
+     * @return the number of missions launched in the given year
+     */
     @Override
     public int countMissionsByYear(int year) {
         return executeQuery(
