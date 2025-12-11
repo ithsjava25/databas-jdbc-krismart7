@@ -1,61 +1,46 @@
 package com.example.repository;
 
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.Statement;
+import com.example.model.MoonMission;
 
-public class MoonMissionRepositoryJdbc {
+import javax.sql.DataSource;
+import java.util.List;
+import java.util.Optional;
 
-    // LIST MOON MISSIONS
-    private void listMoonMissions(Connection connection) throws SQLException {
-        String sql = "SELECT mission_id, spacecraft FROM moon_mission";
-        try (Statement stmt = connection.createStatement();
-             ResultSet rs = stmt.executeQuery(sql)) {
-            System.out.println("Moon Missions:");
-            while (rs.next()) {
-                System.out.println(rs.getInt("mission_id") + ": " + rs.getString("spacecraft"));
-            }
-        }
+public class MoonMissionRepositoryJdbc extends BaseRepository<MoonMission> implements MoonMissionRepository {
+
+    public MoonMissionRepositoryJdbc(DataSource dataSource, boolean devMode) {
+        super(dataSource, devMode);
     }
 
-
-    // GET MOON MISSION BY ID
-    private void getMoonMissionById(Connection connection, InputStream in) throws SQLException, IOException {
-        System.out.print("Enter mission_id: ");
-        int id = Integer.parseInt(readLine(in));
-
-        String sql = "SELECT * FROM moon_mission WHERE mission_id = ?";
-        try (PreparedStatement ps = connection.prepareStatement(sql)) {
-            ps.setInt(1, id);
-            try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) {
-                    System.out.println("Spacecraft: " + rs.getString("spacecraft"));
-                    System.out.println("Launch Date: " + rs.getDate("launch_date"));
-                    System.out.println("Carrier Rocket: " + rs.getString("carrier_rocket"));
-                    System.out.println("Operator: " + rs.getString("operator"));
-                    System.out.println("Mission Type: " + rs.getString("mission_type"));
-                    System.out.println("Outcome: " + rs.getString("outcome"));
-                } else {
-                    System.out.println("No mission found with id " + id);
-                }
-            }
-        }
+    @Override
+    protected MoonMission map(java.sql.ResultSet rs) throws java.sql.SQLException {
+        return new MoonMission(
+                rs.getInt("mission_id"),
+                rs.getString("spacecraft"),
+                rs.getDate("launch_date"),
+                rs.getString("carrier_rocket"),
+                rs.getString("operator"),
+                rs.getString("mission_type"),
+                rs.getString("outcome")
+        );
     }
 
-    // COUNT MISSIONS BY YEAR
-    private void countMissionsByYear(Connection connection, InputStream in) throws SQLException, IOException {
-        System.out.print("Enter year: ");
-        int year = Integer.parseInt(readLine(in));
-
-        String sql = "SELECT COUNT(*) FROM moon_mission WHERE YEAR(launch_date) = ?";
-        try (PreparedStatement ps = connection.prepareStatement(sql)) {
-            ps.setInt(1, year);
-            try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) {
-                    System.out.println("Number of missions in " + year + ": " + rs.getInt(1));
-                }
-            }
-        }
+    @Override
+    public List<MoonMission> listMissions() {
+        return queryList("SELECT * FROM moon_mission");
     }
 
+    @Override
+    public Optional<MoonMission> getMissionById(int missionId) {
+        return querySingle("SELECT * FROM moon_mission WHERE mission_id=?", missionId);
+    }
+
+    @Override
+    public int countMissionsByYear(int year) {
+        return executeQuery(
+                "SELECT COUNT(*) FROM moon_mission WHERE YEAR(launch_date)=?",
+                rs -> { rs.next(); return rs.getInt(1); },
+                year
+        );
+    }
 }

@@ -3,83 +3,60 @@ package com.example.repository;
 import com.example.model.Account;
 
 import javax.sql.DataSource;
-import java.sql.*;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-public class AccountRepositoryJdbc implements AccountRepository {
-    private final DataSource ds;
+public class AccountRepositoryJdbc extends BaseRepository<Account> implements AccountRepository {
 
-    public AccountRepositoryJdbc(DataSource ds) { this.ds = ds; }
-
-    @Override
-    public Optional<Account> findNameAndPassword(String name, String password) {
-        try (Connection c = ds.getConnection();
-             PreparedStatement ps = c.prepareStatement(
-                     "SELECT * FROM account WHERE name=? AND password=?")) {
-            ps.setString(1, name);
-            ps.setString(2, password);
-            ResultSet rs = ps.executeQuery();
-            if (rs.next()) return Optional.of(mapAccount(rs));
-            else return Optional.empty();
-        } catch (SQLException e) { throw new RuntimeException(e); }
+    public AccountRepositoryJdbc(DataSource dataSource, boolean devMode) {
+        super(dataSource, devMode);
     }
 
     @Override
-    public List<Account> findAll() {
-        try (Connection c = ds.getConnection();
-             PreparedStatement ps = c.prepareStatement("SELECT * FROM account")) {
-            ResultSet rs = ps.executeQuery();
-            List<Account> list = new ArrayList<>();
-            while (rs.next()) list.add(mapAccount(rs));
-            return list;
-        } catch (SQLException e) { throw new RuntimeException(e); }
-    }
-
-    @Override
-    public long create(Account a) {
-        try (Connection c = ds.getConnection();
-             PreparedStatement ps = c.prepareStatement(
-                     "INSERT INTO account(name, first_name, last_name, ssn, password) VALUES (?,?,?,?,?)",
-                     Statement.RETURN_GENERATED_KEYS)) {
-            ps.setString(1, a.name());
-            ps.setString(2, a.firstName());
-            ps.setString(3, a.lastName());
-            ps.setString(4, a.ssn());
-            ps.setString(5, a.password());
-            ps.executeUpdate();
-            try (ResultSet keys = ps.getGeneratedKeys()) { keys.next(); return keys.getLong(1); }
-        } catch (SQLException e) { throw new RuntimeException(e); }
-    }
-
-    @Override
-    public boolean updatePassword(long id, String pw) {
-        try (Connection c = ds.getConnection();
-             PreparedStatement ps = c.prepareStatement("UPDATE account SET password=? WHERE user_id=?")) {
-            ps.setString(1, pw);
-            ps.setLong(2, id);
-            return ps.executeUpdate() > 0;
-        } catch (SQLException e) { throw new RuntimeException(e); }
-    }
-
-    @Override
-    public boolean delete(long id) {
-        try (Connection c = ds.getConnection();
-             PreparedStatement ps = c.prepareStatement("DELETE FROM account WHERE user_id=?")) {
-            ps.setLong(1, id);
-            return ps.executeUpdate() > 0;
-        } catch (SQLException e) { throw new RuntimeException(e); }
-    }
-
-    private Account mapAccount(ResultSet rs) throws SQLException {
+    protected Account map(java.sql.ResultSet rs) throws java.sql.SQLException {
         return new Account(
                 rs.getLong("user_id"),
-                rs.getString("name"),
                 rs.getString("first_name"),
                 rs.getString("last_name"),
                 rs.getString("ssn"),
-                rs.getString("password")
+                rs.getString("password"),
+                rs.getString("name")
         );
+    }
+
+    @Override
+    public List<Account> listAccounts() {
+        return queryList("SELECT * FROM account");
+    }
+
+    @Override
+    public Optional<Account> getById(long userId) {
+        return querySingle("SELECT * FROM account WHERE user_id=?", userId);
+    }
+
+    @Override
+    public boolean validateLogin(String username, String password) {
+        return executeQuery(
+                "SELECT COUNT(*) FROM account WHERE name=? AND password=?",
+                rs -> { rs.next(); return rs.getInt(1) > 0; },
+                username, password
+        );
+    }
+
+    @Override
+    public long createAccount(String firstName, String lastName, String ssn, String password) {
+        String name = firstName.substring(0, 3) + lastName.substring(0, 3);
+        String sql = "INSERT INTO account (first_name, last_name, ssn, password, name) VALUES (?,?,?,?,?)";
+        return executeUpdateReturnId(sql, firstName, lastName, ssn, password, name);
+    }
+
+    @Override
+    public void updatePassword(long userId, String newPassword) {
+        executeUpdate("UPDATE account SET password=? WHERE user_id=?", newPassword, userId);
+    }
+
+    @Override
+    public void deleteAccount(long userId) {
+        executeUpdate("DELETE FROM account WHERE user_id=?", userId);
     }
 }
