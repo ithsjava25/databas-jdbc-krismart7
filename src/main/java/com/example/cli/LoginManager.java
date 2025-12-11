@@ -1,37 +1,52 @@
 package com.example.cli;
 
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
+import com.example.service.AccountService;
+import java.sql.SQLException;
 
-public class LoginManager {
+public class LoginManager implements ExitMenuHandler {
 
+    private final AccountService service;
+    private final int maxAttempts;
+    private final InputReader input;
 
-    // LOGIN LOOP
-    boolean loggedIn = false;
-            while (!loggedIn) {
-        System.out.print("Username: ");
-        String username = readLine(in);
+    public LoginManager(AccountService service, InputReader input) {
+        this(service, input, 5);
+    }
 
-        System.out.print("Password: ");
-        String password = readLine(in);
+    public LoginManager(AccountService service, InputReader input, int maxAttempts) {
+        this.service = service;
+        this.input = input;
+        this.maxAttempts = maxAttempts;
+    }
 
-        try (PreparedStatement ps = connection.prepareStatement(
-                "SELECT 1 FROM account WHERE name = ? AND password = ?")) {
+    public boolean login() {
+        System.out.println("Type 0 to exit anytime, or 'menu' to go back.");
 
-            ps.setString(1, username);
-            ps.setString(2, password);
+        int attempts = 0;
+        while (attempts < maxAttempts) {
+            var usernameWrapper = input.readString("Username");
+            if (handleExitOrMenu(usernameWrapper.result())) return false;
 
-            try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) {
-                    loggedIn = true;
-                    System.out.println("Login successful!");
+            var passwordWrapper = input.readPassword("Password");
+            if (handleExitOrMenu(passwordWrapper.result())) return false;
+
+            try {
+                if (service.validateLogin(usernameWrapper.value(), passwordWrapper.value())) {
+                    System.out.println("\n✅ Login successful! Welcome, " + usernameWrapper.value() + "!\n");
+                    return true;
                 } else {
-                    System.out.println("Invalid username or password");
-                    System.out.print("Press 0 to exit or enter to retry: ");
-                    String exit = readLine(in);
-                    if ("0".equals(exit)) return;
+                    System.out.println("❌ Invalid username or password ❌");
                 }
+            } catch (SQLException e) {
+                System.out.println("❌ Error validating login: " + e.getMessage());
+            }
+
+            attempts++;
+            if (attempts < maxAttempts) {
+                System.out.println("Attempts left: " + (maxAttempts - attempts));
             }
         }
+
+        return false;
     }
 }
