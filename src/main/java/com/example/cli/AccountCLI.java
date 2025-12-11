@@ -2,7 +2,8 @@ package com.example.cli;
 
 import com.example.model.Account;
 import com.example.service.AccountService;
-import java.sql.SQLException;
+import com.example.repository.RepositoryException;
+
 import java.util.List;
 
 public class AccountCLI implements ExitMenuHandler {
@@ -31,7 +32,8 @@ public class AccountCLI implements ExitMenuHandler {
 
             long id = service.createAccount(first.value(), last.value(), ssn.value(), pass.value());
             System.out.println("\n✅ Account created with ID: " + id + " ✅\n");
-        } catch (SQLException e) {
+
+        } catch (RepositoryException e) {
             System.out.println("❌ Error creating account: " + e.getMessage());
         }
     }
@@ -45,9 +47,7 @@ public class AccountCLI implements ExitMenuHandler {
             }
 
             System.out.println("\n📋 Existing accounts:");
-            for (Account acc : accounts) {
-                System.out.println(acc);  // toString() används automatiskt
-            }
+            accounts.forEach(System.out::println);
 
             var idWrapper = input.readValidUserId("User ID");
             if (handleExitOrMenu(idWrapper.result())) return;
@@ -63,13 +63,10 @@ public class AccountCLI implements ExitMenuHandler {
             service.updatePassword(idWrapper.value(), passWrapper.value());
             System.out.println("\n✅ Password updated ✅\n");
 
-        } catch (SQLException e) {
+        } catch (RepositoryException e) {
             System.out.println("❌ Error updating password: " + e.getMessage());
         }
     }
-
-
-
 
     public void deleteAccount() {
         try {
@@ -80,9 +77,7 @@ public class AccountCLI implements ExitMenuHandler {
             }
 
             System.out.println("\n📋 Existing accounts:");
-            for (Account acc : accounts) {
-                System.out.println(acc);
-            }
+            accounts.forEach(System.out::println);
 
             var idWrapper = input.readValidUserId("User ID");
             if (handleExitOrMenu(idWrapper.result())) return;
@@ -108,7 +103,7 @@ public class AccountCLI implements ExitMenuHandler {
                     System.out.println("❌ Invalid input, type yes, no, or menu ❌");
                 }
             }
-        } catch (SQLException e) {
+        } catch (RepositoryException e) {
             System.out.println("❌ Error deleting account: " + e.getMessage());
         }
     }

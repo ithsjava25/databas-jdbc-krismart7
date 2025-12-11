@@ -2,8 +2,8 @@ package com.example.cli;
 
 import com.example.model.MoonMission;
 import com.example.service.MoonMissionService;
+import com.example.repository.RepositoryException;
 
-import java.sql.SQLException;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
@@ -24,7 +24,7 @@ public class MoonMissionCLI implements ExitMenuHandler {
             System.out.println("\n-- All Moon Missions --");
             missions.forEach(m -> System.out.println(m.spacecraft()));
             System.out.println("----------------------\n");
-        } catch (SQLException e) {
+        } catch (RepositoryException e) {
             System.out.println("❌ Error listing missions: " + e.getMessage());
         }
     }
@@ -43,7 +43,7 @@ public class MoonMissionCLI implements ExitMenuHandler {
                     },
                     () -> System.out.println("❌ No mission with that ID ❌")
             );
-        } catch (SQLException e) {
+        } catch (RepositoryException e) {
             System.out.println("❌ Error fetching mission: " + e.getMessage());
         }
     }
@@ -60,7 +60,7 @@ public class MoonMissionCLI implements ExitMenuHandler {
                     .sorted(Comparator.comparing(MoonMission::launchDate).reversed())
                     .forEach(this::printMissionSummary);
             System.out.println("-------------------\n");
-        } catch (SQLException e) {
+        } catch (RepositoryException e) {
             System.out.println("❌ Error counting missions: " + e.getMessage());
         }
     }

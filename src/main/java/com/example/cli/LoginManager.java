@@ -1,7 +1,7 @@
 package com.example.cli;
 
 import com.example.service.AccountService;
-import java.sql.SQLException;
+import com.example.repository.RepositoryException;
 
 public class LoginManager implements ExitMenuHandler {
 
@@ -37,7 +37,7 @@ public class LoginManager implements ExitMenuHandler {
                 } else {
                     System.out.println("❌ Invalid username or password ❌");
                 }
-            } catch (SQLException e) {
+            } catch (RepositoryException e) {
                 System.out.println("❌ Error validating login: " + e.getMessage());
             }
 
