@@ -18,5 +18,4 @@ public record Account(
                 ", SSN: " + ssn +
                 ", Name: " + name;
     }
-    // fix: skriv ut visuell record-account vid delete eller update password?
 }
