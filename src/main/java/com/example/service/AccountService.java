@@ -7,6 +7,10 @@ import com.example.repository.RepositoryException;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * Service layer for managing accounts. Wraps AccountRepository
+ * and handles exceptions by throwing RepositoryException.
+ */
 public class AccountService {
     private final AccountRepository repo;
 

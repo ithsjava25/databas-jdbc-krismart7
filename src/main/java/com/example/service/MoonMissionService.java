@@ -7,6 +7,10 @@ import com.example.repository.RepositoryException;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * Service layer for managing moon missions. Wraps MoonMissionRepository
+ * and handles exceptions by throwing RepositoryException.
+ */
 public class MoonMissionService {
     private final MoonMissionRepository repo;
 
