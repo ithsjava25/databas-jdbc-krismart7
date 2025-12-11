@@ -9,10 +9,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-public class AccountImpl implements AccountRepository {
+public class AccountRepositoryJdbc implements AccountRepository {
     private final DataSource ds;
 
-    public AccountImpl(DataSource ds) { this.ds = ds; }
+    public AccountRepositoryJdbc(DataSource ds) { this.ds = ds; }
 
     @Override
     public Optional<Account> findNameAndPassword(String name, String password) {
